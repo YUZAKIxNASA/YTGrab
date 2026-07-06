@@ -1,62 +1,67 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import QualityCard from './QualityCard';
+import DownloadManager from './DownloadManager';
+
 export default function ResultCard({ data }) {
+  const [descOpen, setDescOpen] = useState(false);
+  const [downloading, setDownloading] = useState(null); // format id
+
   if (!data) return null;
 
-  const onDownload = (formatId) => {
-    // open download URL in new tab - backend handles streaming
-    const url = `/api/download?url=${encodeURIComponent(data.link)}&format_id=${encodeURIComponent(formatId)}`;
-    window.open(url, '_blank');
-  };
+  const formats = Array.isArray(data.formats) ? data.formats : [];
+
+  const videoFormats = formats.filter(f => f.ext && f.ext.toLowerCase() !== 'mp3' && f.ext.toLowerCase() !== 'm4a' && f.ext.toLowerCase() !== 'aac');
+  const audioFormats = formats.filter(f => ['mp3','m4a','aac'].includes((f.ext||'').toLowerCase()));
 
   return (
-    <article className="max-w-3xl mx-auto mt-6 glass rounded-xl p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <motion.article initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="result-card max-w-4xl mx-auto mt-6 glass rounded-xl p-4 grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="md:col-span-1">
-        <img src={data.thumbnail} alt={`${data.title} thumbnail`} className="w-full rounded-md object-cover" loading="lazy" />
+        <motion.img layoutId={`thumb-${data.link}`} src={data.thumbnail} alt={`${data.title} thumbnail`} className="w-full rounded-md object-cover shadow-soft" loading="lazy" />
       </div>
 
-      <div className="md:col-span-2 flex flex-col gap-3">
+      <div className="md:col-span-3 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-xl font-semibold leading-tight">{data.title}</h3>
+            <p className="text-sm text-white/80 mt-1">{data.channel} · {data.uploadDate} · {data.duration}</p>
+            <div className="text-sm text-white/70 mt-2">{data.views ? `${data.views.toLocaleString?.() || data.views} views` : ''}</div>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <a className="px-3 py-2 bg-white/6 rounded-md hover:bg-white/8 text-sm" href={data.link} target="_blank" rel="noreferrer">Open on YouTube</a>
+            <button className="px-3 py-2 bg-gradient-to-r from-primary to-accent rounded-md text-sm" onClick={() => navigator.clipboard?.writeText(data.link)}>Copy Link</button>
+          </div>
+        </div>
+
         <div>
-          <h3 className="text-lg font-semibold">{data.title}</h3>
-          <p className="text-sm text-white/80">{data.channel} • {data.uploadDate} • {data.duration}</p>
+          <button aria-expanded={descOpen} onClick={() => setDescOpen(s => !s)} className="text-sm text-white/70 underline-offset-2 hover:underline">{descOpen ? 'Hide' : 'Show'} description</button>
+          {descOpen && <div className="mt-3 text-sm text-white/75 leading-relaxed max-h-40 overflow-auto p-3 bg-card/60 rounded-md border border-white/4">{data.description || 'No description available.'}</div>}
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <div className="flex-1">
-            <h4 className="text-sm font-medium mb-2">Available formats</h4>
-            <div className="flex flex-wrap gap-2">
-              {Array.isArray(data.formats) && data.formats.length ? data.formats.map((f)=> (
-                <div key={f.id} className="px-3 py-2 bg-white/3 rounded-md text-sm flex items-center gap-2">
-                  <span className="font-medium">{f.quality || f.format || (f.height? `${f.height}p` : f.ext)}</span>
-                  <span className="text-xs text-white/60">• {f.sizeBytes ? Math.round(f.sizeBytes/1024/1024 *10)/10 + ' MB' : '—'}</span>
-                </div>
-              )) : <div className="text-sm text-white/60">No formats available</div>}
-            </div>
-          </div>
+        <div>
+          <h4 className="text-sm font-medium mb-3">Available video qualities</h4>
+          {videoFormats.length === 0 && <div className="text-sm text-white/60">No video formats available.</div>}
 
-          <div className="flex gap-2">
-            <a className="px-4 py-2 bg-white/6 rounded-md hover:bg-white/8" href={data.link} target="_blank" rel="noreferrer">Open Link</a>
-            <button onClick={() => navigator.clipboard?.writeText(data.link)} className="px-4 py-2 bg-gradient-to-r from-primary to-accent rounded-md">Copy Link</button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {videoFormats.map(f => (
+              <QualityCard key={f.id} format={f} onDownload={(id) => setDownloading(id)} />
+            ))}
           </div>
         </div>
 
-        <div className="mt-2 text-sm text-white/70">Select a format and click Download to start.</div>
-
-        <div style={{marginTop:12}}>
-          {Array.isArray(data.formats) && data.formats.length ? data.formats.map((f)=> (
-            <div key={f.id} style={{marginBottom:8}} className="format">
-              <div style={{display:'flex',flexDirection:'column'}}>
-                <div className="quality">{f.quality} <span style={{color:'var(--muted)',fontWeight:600}}>· {f.ext?.toUpperCase() || f.ext}</span></div>
-                <div className="file-size">{f.sizeBytes ? Math.round(f.sizeBytes/1024/1024*10)/10 + ' MB' : '-'}</div>
-              </div>
-              <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:8}}>
-                <div className="badge">{f.quality}</div>
-                <div style={{display:'flex',gap:8}}>
-                  <button className="download-btn" onClick={() => onDownload(f.id)}>Download</button>
-                </div>
-              </div>
-            </div>
-          )) : null }
+        <div>
+          <h4 className="text-sm font-medium mb-3">Audio formats</h4>
+          <div className="flex gap-3 flex-wrap">
+            {audioFormats.length === 0 && <div className="text-sm text-white/60">No audio formats available.</div>}
+            {audioFormats.map(f => (
+              <QualityCard key={f.id} format={f} onDownload={(id) => setDownloading(id)} />
+            ))}
+          </div>
         </div>
+
+        {/* Download manager overlay */}
+        {downloading && <DownloadManager url={data.link} formatId={downloading} onClose={() => setDownloading(null)} title={data.title} />}
       </div>
-    </article>
+    </motion.article>
   );
 }
