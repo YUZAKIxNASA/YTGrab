@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { analyzeUrl } from "../client/api";
-import ResultCard from "./ResultCard";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import Placeholder from './Placeholder';
+import ResultCard from './ResultCard';
+import { analyzeUrl } from '../client/api';
 
 export default function Hero() {
   const [url, setUrl] = useState('');
@@ -8,24 +10,38 @@ export default function Hero() {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
 
+  useEffect(() => {
+    // small UX: preserve last URL in sessionStorage
+    try {
+      const last = sessionStorage.getItem('ytgrab:last_url');
+      if (last) setUrl(last);
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    try { sessionStorage.setItem('ytgrab:last_url', url); } catch (e) {}
+  }, [url]);
+
   const onPaste = async () => {
     try {
       const t = await navigator.clipboard.readText();
       if (t) setUrl(t);
     } catch (e) {
-      // ignore clipboard errors
+      // ignore
     }
   };
 
-  const onClear = () => { setUrl(''); setResult(null); setError(null); };
+  const onClear = () => { setUrl(''); setError(null); setResult(null); };
 
   const onAnalyze = async () => {
-    if (!url) { setError('Please enter a URL'); return; }
-    setLoading(true); setError(null);
+    setError(null);
+    if (!url || !/^https?:\/\//i.test(url)) {
+      setError('Please enter a valid URL (must include http/https)');
+      return;
+    }
+    setLoading(true);
     try {
       const data = await analyzeUrl(url);
-      // Adapt backend payload to ResultCard expected shape if necessary
-      // Expected fields: title, thumbnail, duration, uploader, uploadDate, formats
       const normalized = {
         title: data.title || data.raw?.title || '',
         thumbnail: data.thumbnail || data.raw?.thumbnail || null,
@@ -33,47 +49,84 @@ export default function Hero() {
         channel: data.uploader || data.raw?.uploader || null,
         uploadDate: data.uploadDate || data.raw?.upload_date || null,
         views: data.raw?.view_count || data.raw?.viewCount || null,
+        description: data.raw?.description || data.description || '',
         formats: data.formats || data.raw?.formats || [],
         link: url,
-        raw: data.raw || data.raw,
+        raw: data.raw || data,
       };
       setResult(normalized);
     } catch (err) {
-      console.error('analyze error', err);
-      setError(err.message || String(err));
+      console.error(err);
+      setError(err.message || 'Analyze failed');
       setResult(null);
-    } finally { setLoading(false); }
-  };
-
-  const onKeyDown = (e) => {
-    if (e.key === 'Enter') onAnalyze();
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <section id="home" className="relative py-12">
-      <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-3xl font-extrabold">Download YouTube Videos Instantly</h1>
-        <p className="mt-3 text-lg text-white/80">Paste a YouTube link, analyze formats and download MP4 or MP3 — fast and private.</p>
+    <section id="home" className="relative overflow-hidden">
+      {/* Animated background */}
+      <div className="hero-aurora pointer-events-none" aria-hidden />
+      <div className="hero-orbs pointer-events-none" aria-hidden>
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+      </div>
 
-        <div className="mt-8">
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-            <div className="w-full sm:w-2/3">
-              <div className="relative">
-                <input id="url" value={url} onChange={(e)=>setUrl(e.target.value)} onKeyDown={onKeyDown} className="w-full rounded-xl py-4 px-4 pr-32 bg-card border border-white/6 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Paste a YouTube video, short, or playlist URL" aria-invalid={!!error} />
+      <div className="container mx-auto px-4 py-12 sm:py-20 lg:py-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-7">
+            <motion.h1 initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }} className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight drop-shadow-md">
+              Download YouTube videos instantly — fast, private, and reliable.
+            </motion.h1>
+
+            <motion.p initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.7 }} className="mt-6 text-lg text-white/75 max-w-2xl">
+              Paste a public YouTube link, analyze available qualities and formats, then download MP4 or MP3 directly from your browser. No accounts, no tracking — production-ready performance.
+            </motion.p>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }} className="mt-8">
+              <div className="relative max-w-3xl">
+                <input
+                  id="hero-url"
+                  className="h-16 w-full rounded-2xl bg-card/60 backdrop-blur-md border border-white/6 px-5 pr-40 text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Paste YouTube video, short, or playlist URL"
+                  value={url}
+                  onChange={(e)=> setUrl(e.target.value)}
+                  onKeyDown={(e)=> { if (e.key === 'Enter') onAnalyze(); }}
+                  aria-label="Video URL"
+                />
+
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
-                  <button onClick={onPaste} className="px-3 py-2 bg-white/6 rounded-md hover:scale-105 transition">Paste</button>
-                  <button onClick={onClear} className="px-3 py-2 bg-white/6 rounded-md">Clear</button>
-                  <button onClick={onAnalyze} disabled={loading} className="px-4 py-2 bg-gradient-to-r from-primary to-accent rounded-md shadow-glow hover:brightness-105 transition" aria-live="polite">{loading ? 'Analyzing…' : 'Analyze'}</button>
+                  <button onClick={onPaste} className="px-4 py-2 rounded-lg bg-white/6 text-sm hover:bg-white/8">Paste</button>
+                  <button onClick={onClear} className="px-4 py-2 rounded-lg bg-white/6 text-sm hover:bg-white/8">Clear</button>
+                  <button onClick={onAnalyze} disabled={loading} className="px-5 py-2 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-glow hover:scale-[1.02] transition">
+                    {loading ? 'Analyzing…' : 'Analyze'}
+                  </button>
                 </div>
               </div>
-              {error && <p className="mt-2 text-sm text-red-400" role="alert">{error}</p>}
-              <p className="mt-2 text-sm text-white/60">Supported: MP4 · MP3 · Shorts · Playlists · Thumbnails</p>
+
+              {error && <div role="alert" className="mt-3 text-sm text-red-400">{error}</div>}
+
+              <p className="mt-4 text-sm text-white/60">Supported: MP4 · MP3 · Shorts · Playlists · Thumbnail</p>
+            </motion.div>
+
+            <div className="mt-10 grid grid-cols-3 gap-3 max-w-md">
+              <div className="pill">Fast</div>
+              <div className="pill">No login</div>
+              <div className="pill">Secure</div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-8">
-          {result && <ResultCard data={result} />}
+          <div className="lg:col-span-5">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="glass rounded-2xl p-6">
+              {/* Placeholder before analyze */}
+              {!result && <Placeholder />}
+
+              {/* Result card after analyze */}
+              {result && <ResultCard data={result} />}
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>
