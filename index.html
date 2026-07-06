@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>YTGrab — Premium UI Preview</title>
+  <meta name="description" content="YTGrab — Premium dark theme UI preview (single-file)."/>
+  <style>
+    /* ========== Design Tokens ========== */
+    :root{
+      --bg:#0B0F19;
+      --bg-2:#07090d;
+      --card:#111827;
+      --card-2:#0f1724;
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+      --primary:#7C3AED;
+      --accent:#22D3EE;
+      --muted: rgba(255,255,255,0.65);
+      --soft-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      --glow: 0 8px 40px rgba(124,58,237,0.14);
+      --radius:14px;
+      --max-width:1200px;
+      --glass-border: rgba(255,255,255,0.04);
+      --accent-gradient: linear-gradient(135deg,var(--primary),#9b59ff 50%, var(--accent));
+      font-synthesis: none;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      :root { --anim-speed: .001ms; }
+    }
+
+    /* ========== Base ========== */
+    *{box-sizing:border-box}
+    html,body,#app{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:
+        radial-gradient(800px 400px at 10% 10%, rgba(124,58,237,0.06), transparent 6%),
+        radial-gradient(700px 350px at 90% 90%, rgba(34,211,238,0.03), transparent 6%),
+        var(--bg);
+      color:#fff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      scroll-behavior:smooth;
+      padding-bottom:60px;
+    }
+
+    .container{max-width:var(--max-width);margin:0 auto;padding:20px;}
+
+/* ========== Navigation ========== */
+    header.nav{
+      position:sticky;top:12px;z-index:40;
+      display:flex;align-items:center;justify-content:center;
+      pointer-events:auto;
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:var(--max-width);padding:8px 18px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border-radius:12px;border:1px solid var(--glass-border);backdrop-filter: blur(8px);box-shadow:var(--soft-shadow);}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent));
+      display:flex;align-items:center;justify-content:center;box-shadow:var(--glow);
+      font-weight:700;font-size:16px;
+    }
+    .brand-title{font-weight:700;letter-spacing:0.2px}
+    nav.links{display:flex;gap:14px;align-items:center}
+    nav.links a{color:var(--muted);text-decoration:none;padding:8px;border-radius:10px;transition:all .18s}
+    nav.links a:hover{color:#fff;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))}
+    .controls{display:flex;gap:8px;align-items:center}
+    .theme-toggle{background:transparent;border:1px solid var(--glass-border);padding:8px;border-radius:10px;cursor:pointer;color:var(--muted)}
+    .cta-btn{background:var(--accent-gradient);padding:10px 14px;border-radius:10px;color:#fff;font-weight:600;box-shadow:var(--glow);border: none;cursor:pointer}
+
+/* ========== Hero ========== */
+    .hero{padding:48px 18px 36px;position:relative;overflow:visible}
+    .hero-inner{display:grid;grid-template-columns:1fr;gap:20px;align-items:center;max-width:1100px;margin:0 auto}
+    .hero-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:18px;padding:28px;border:1px solid var(--glass-border);backdrop-filter: blur(8px);box-shadow:var(--soft-shadow);display:flex;flex-direction:column;gap:18px;}
+    .hero-title{font-size:clamp(28px,6vw,44px);line-height:1.02;font-weight:800;background:linear-gradient(90deg,#fff 0%,#fff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-0.6px;transform-origin:left}
+    .subtitle{color:var(--muted);font-size:15px;max-width:820px}
+    .input-row{display:flex;gap:10px;align-items:center}
+    .url-input{flex:1;padding:14px 16px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.04);color:#fff;outline:none;font-size:14px}
+    .small-btn{padding:10px 12px;border-radius:10px;border:1px solid var(--glass-border);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));color:var(--muted);cursor:pointer}
+    .large-btn{padding:12px 18px;border-radius:12px;border:none;background:var(--accent-gradient);color:#fff;font-weight:700;cursor:pointer;box-shadow:var(--glow)}
+    .hint{font-size:13px;color:var(--muted);margin-top:4px}
+
+/* Floating shapes */
+    .float-shape{position:absolute;border-radius:999px;filter:blur(36px);opacity:0.7;mix-blend-mode:screen}
+    .float-1{width:260px;height:260px;left:-40px;top:-60px;background:radial-gradient(circle,var(--primary),transparent)}
+    .float-2{width:220px;height:220px;right:-60px;bottom:-40px;background:radial-gradient(circle,var(--accent),transparent)}
+
+/* ========== Result Card ========== */
+    .result-wrap{max-width:980px;margin:12px auto 0}
+    .result-card{display:grid;grid-template-columns:1fr;gap:16px;padding:18px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0.01));border:1px solid var(--glass-border);box-shadow:var(--soft-shadow)}
+    .result-top{display:flex;gap:14px;align-items:flex-start}
+    .thumb{width:240px;height:135px;border-radius:12px;overflow:hidden;flex-shrink:0;background:linear-gradient(90deg,#3b3b59,#1f2a44)}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .meta{flex:1}
+    .title{font-weight:700;font-size:18px}
+    .byline{color:var(--muted);font-size:13px;margin-top:6px}
+    .stats{display:flex;gap:12px;color:var(--muted);margin-top:8px;font-size:13px}
+    .formats{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .format{background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.006));padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);min-width:160px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .badge{background:linear-gradient(90deg,var(--primary),var(--accent));padding:6px 8px;border-radius:10px;font-weight:700;font-size:12px;box-shadow:var(--glow)}
+    .download-btn{padding:8px 10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff;cursor:pointer}
+    .file-size{color:var(--muted);font-size:12px}
+    .quality{font-weight:700;font-size:12px;color:var(--muted)}
+
+/* ========== Features ========== */
+    .features-grid{display:grid;grid-template-columns:repeat(1,1fr);gap:14px;margin-top:18px}
+    .feature-card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005));padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 8px 30px rgba(2,6,23,0.45);display:flex;gap:12px;align-items:flex-start;transition:transform .22s ease,box-shadow .22s}
+    .feature-card:hover{transform:translateY(-8px);box-shadow:0 18px 60px rgba(2,6,23,0.6)}
+    .feature-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:var(--glow)}
+    .feature-title{font-weight:700}
+    .feature-desc{color:var(--muted);font-size:13px;margin-top:6px}
+
+/* ========== FAQ Accordion ========== */
+    .faq{margin-top:20px}
+    .qa{background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.005));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);margin-bottom:10px}
+    .qa button{width:100%;text-align:left;background:transparent;border:0;padding:0;color:#fff;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+    .qa .answer{margin-top:8px;color:var(--muted);font-size:14px;display:none}
+    .qa.open .answer{display:block}
+
+/* ========== Contact & Footer ========== */
+    .contact-card{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.006));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    .input{width:100%;padding:12px;border-radius:10px;background:var(--card);border:1px solid rgba(255,255,255,0.04);color:#fff}
+    footer.site{margin-top:36px;padding:28px 18px;color:var(--muted);border-top:1px solid rgba(255,255,255,0.02)}
+
+/* ========== Utilities & Responsive ========== */
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col{flex:1;min-width:220px}
+    @media(min-width:900px){
+      .hero-inner{grid-template-columns: 1fr 420px;gap:32px}
+      .result-card{grid-template-columns: 260px 1fr}
+      .features-grid{grid-template-columns:repeat(3,1fr)}
+    }
+    @media(min-width:1200px){
+      .container{padding:34px}
+    }
+
+    /* small UI details */
+    .pill{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);font-weight:600}
+    .muted{color:var(--muted)}
+    .skeleton{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.04), rgba(255,255,255,0.02));border-radius:8px;animation: shimmer 1.2s linear infinite}
+    @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+    @keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-12px)}100%{transform:translateY(0)}}
+    .float-anim{animation:floaty 6s ease-in-out infinite}
+    .btn-ripple{position:relative;overflow:hidden}
+    .ripple{position:absolute;border-radius:999px;background:rgba(255,255,255,0.12);transform:scale(0);animation:ripple 600ms ease-out;pointer-events:none}
+    @keyframes ripple{to{transform:scale(6);opacity:0}}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- NAV -->
+    <header class="nav" role="banner" aria-label="Main navigation">
+      <div class="nav-inner">
+        <div class="brand">
+          <div class="logo" aria-hidden>YT</div>
+          <div>
+            <div class="brand-title">YTGrab</div>
+            <div class="muted" style="font-size:12px">@ঔৣ፝ N4!</div>
+          </div>
+        </div>
+
+        <nav class="links" role="navigation" aria-label="Primary">
+          <a href="#home">Home</a>
+          <a href="#features">Features</a>
+          <a href="#faq">FAQ</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="controls">
+          <button class="theme-toggle" id="themeToggle" aria-pressed="false" title="Toggle dark mode">🌙</button>
+          <button class="cta-btn btn-ripple" id="tryBtn">Try — It's Free</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section id="home" class="hero container" aria-label="Hero">
+      <div class="hero-inner">
+        <div class="hero-card" role="region" aria-labelledby="hero-heading">
+          <h1 id="hero-heading" class="hero-title" aria-live="polite">Grab videos instantly — fast, private, and clean.</h1>
+          <p class="subtitle">Paste a public video URL, analyze the media, and download in multiple formats. No accounts. No clutter. Beautiful, efficient UX.</p>
+
+          <div class="input-row" style="margin-top:8px">
+            <input id="urlInput" class="url-input" type="url" placeholder="Paste a YouTube, Vimeo, or public video URL" aria-label="Video URL (paste here)">
+            <button class="small-btn btn-ripple" id="pasteBtn" title="Paste from clipboard">Paste</button>
+            <button class="large-btn btn-ripple" id="analyzeBtn" title="Analyze URL">Analyze</button>
+          </div>
+          <div class="hint">Try a demo URL: <span class="pill">https://youtu.be/dQw4w9WgXcQ</span></div>
+
+          <div id="heroLoading" style="display:none;margin-top:12px">
+            <div class="skeleton" style="height:86px;border-radius:12px"></div>
+          </div>
+        </div>
+
+        <!-- right preview box -->
+        <aside style="display:flex;flex-direction:column;gap:12px;align-items:stretch;">
+          <div class="float-shape float-1 float-anim" style="opacity:0.45"></div>
+          <div class="float-shape float-2 float-anim" style="opacity:0.28"></div>
+
+          <div class="hero-card" style="min-width:360px;max-width:420px;">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-weight:700">Live Preview</div>
+              <div class="muted" style="font-size:12px">Dark • Premium</div>
+            </div>
+            <div style="margin-top:12px">
+              <div class="skeleton" style="height:160px;border-radius:12px"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <div class="pill">Fast</div><div class="pill">No login</div><div class="pill">Secure</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result" class="result-wrap container" aria-live="polite" style="display:none">
+      <div class="result-card" role="region" aria-label="Analyze result">
+        <div class="result-top">
+          <div class="thumb" aria-hidden>
+            <!-- Inline SVG as data URI for realistic thumbnail -->
+            <img alt="Video thumbnail" id="thumbImg" src='data:image/svg+xml;utf8,
+              <svg xmlns="http://www.w3.org/2000/svg" width="560" height="315">
+                <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="%237C3AED"/><stop offset="1" stop-color="%2322D3EE"/></linearGradient></defs>
+                <rect width="100%" height="100%" fill="url(%23g)"/>
+                <circle cx="80" cy="80" r="48" fill="rgba(255,255,255,0.12)"/>
+                <text x="140" y="170" font-family="Inter,Arial" font-size="34" fill="white">How to Build a Rocket</text>
+              </svg>' />
+          </div>
+
+          <div class="meta">
+            <div class="title" id="videoTitle">How to Build a Rocket (Beginner’s Guide)</div>
+            <div class="byline" id="channel">SpaceCraft Labs • Jul 1, 2026</div>
+            <div class="stats">
+              <div>12:34</div>
+              <div>•</div>
+              <div id="views">1,234,567 views</div>
+              <div>•</div>
+              <div id="uploaded">Uploaded 5 days ago</div>
+            </div>
+
+            <div class="formats" id="formatsList" style="margin-top:14px">
+              <!-- format cards injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div class="muted" style="font-size:13px">Available formats — choose and download instantly</div>
+            <div style="display:flex;gap:8px">
+              <button class="small-btn btn-ripple" id="copyLinkBtn" title="Copy video link">Copy Link</button>
+              <button class="small-btn btn-ripple" id="shareBtn" title="Share">Share</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="container" style="margin-top:28px">
+      <h2 style="font-size:22px;margin-bottom:8px">Features</h2>
+      <p class="muted">Premium design, fast processing, responsive, and accessible — built for delightful interactions.</p>
+
+      <div class="features-grid" style="margin-top:16px">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <div>
+            <div class="feature-title">Fast Processing</div>
+            <div class="feature-desc">Analyze and prepare downloads in seconds with optimized pipelines.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <div>
+            <div class="feature-title">Responsive</div>
+            <div class="feature-desc">Mobile-first layouts that look perfect on any screen.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">✨</div>
+          <div>
+            <div class="feature-title">Modern Animations</div>
+            <div class="feature-desc">Subtle, buttery motion for a premium feel.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <div>
+            <div class="feature-title">Secure</div>
+            <div class="feature-desc">HTTPS-first architecture with sensible defaults.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🎧</div>
+          <div>
+            <div class="feature-title">Audio & Video</div>
+            <div class="feature-desc">Export as MP4, MP3 and more popular formats.</div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🧭</div>
+          <div>
+            <div class="feature-title">Clean UI</div>
+            <div class="feature-desc">Minimal, focused interface designed for clarity.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="container faq" style="margin-top:28px">
+      <h2 style="font-size:22px;margin-bottom:8px">FAQ</h2>
+
+      <div class="qa" data-id="1">
+        <button aria-expanded="false">Do I need an account? <span>+</span></button>
+        <div class="answer">No. YTGrab preview is a front-end demo and does not require accounts.</div>
+      </div>
+
+      <div class="qa" data-id="2">
+        <button aria-expanded="false">Which sites are supported? <span>+</span></button>
+        <div class="answer">This demo supports public video links. The backend would determine provider support (YouTube, Vimeo, etc.).</div>
+      </div>
+
+      <div class="qa" data-id="3">
+        <button aria-expanded="false">Is this safe to use? <span>+</span></button>
+        <div class="answer">This UI is a design preview. A production service must enforce security, rate limits, and legal compliance.</div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="container" style="margin-top:28px">
+      <h2 style="font-size:22px;margin-bottom:8px">About</h2>
+      <div class="hero-card" style="display:flex;gap:18px;align-items:center">
+        <div style="flex:1">
+          <p class="muted">YTGrab is a minimal, high-performance UI concept that prioritizes speed, clarity, and a premium visual language. It’s designed to be connected to a backend analyzer and downloader while keeping the frontend delightful and accessible.</p>
+        </div>
+        <div style="min-width:200px">
+          <div class="pill">Design-first</div>
+          <div style="height:8px"></div>
+          <div class="pill">Developer friendly</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="container" style="margin-top:28px">
+      <h2 style="font-size:22px;margin-bottom:8px">Contact</h2>
+      <div class="row">
+        <div class="col contact-card">
+          <input class="input" id="contactName" placeholder="Name" aria-label="Name" />
+          <div style="height:8px"></div>
+          <input class="input" id="contactEmail" placeholder="Email" type="email" aria-label="Email" />
+          <div style="height:8px"></div>
+          <textarea class="input" id="contactMessage" rows="5" placeholder="Message" aria-label="Message"></textarea>
+          <div style="height:10px"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <button class="large-btn btn-ripple" id="sendContact">Send Message</button>
+            <div id="contactStatus" class="muted" style="font-size:13px"></div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="hero-card">
+            <h3 style="margin:0 0 8px 0">Social</h3>
+            <p class="muted">Find updates and discuss on social platforms</p>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <div class="small-btn">🐦 Twitter</div>
+              <div class="small-btn">🐙 GitHub</div>
+              <div class="small-btn">💬 Discord</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site container" role="contentinfo">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-weight:700">YTGrab</div>
+          <div class="muted" style="font-size:13px">Premium UI preview • © <span id="year"></span></div>
+        </div>
+
+        <div style="display:flex;gap:12px">
+          <a href="#features" class="muted">Features</a>
+          <a href="#faq" class="muted">FAQ</a>
+          <a href="#contact" class="muted">Contact</a>
+        </div>
+
+        <div><a href="#home" class="pill">Back to top ↑</a></div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /* ========== Utilities ========== */
+    const $ = (sel, ctx=document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+    // demo formats data
+    const demoFormats = [
+      { id:'137', quality:'1080p', ext:'mp4', sizeText:'120 MB', sizeBytes:120*1024*1024, type:'video/mp4' },
+      { id:'22', quality:'720p', ext:'mp4', sizeText:'60 MB', sizeBytes:60*1024*1024, type:'video/mp4' },
+      { id:'135', quality:'480p', ext:'mp4', sizeText:'30 MB', sizeBytes:30*1024*1024, type:'video/mp4' },
+      { id:'251', quality:'MP3', ext:'mp3', sizeText:'4 MB', sizeBytes:4*1024*1024, type:'audio/mpeg' }
+    ];
+
+    // initial demo metadata
+    const demoMeta = {
+      title: "How to Build a Rocket (Beginner’s Guide)",
+      channel: "SpaceCraft Labs",
+      duration: "12:34",
+      uploadDate: "Jul 1, 2026",
+      views: "1,234,567",
+      thumbnail: document.getElementById('thumbImg').src
+    };
+
+    // set year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ========== Theme toggle (UI only) ========== */
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', (e) => {
+      const pressed = themeBtn.getAttribute('aria-pressed') === 'true';
+      themeBtn.setAttribute('aria-pressed', String(!pressed));
+      // purely UI: toggle small visual change
+      if(!pressed){
+        document.documentElement.style.setProperty('--bg','#ffffff');
+        document.documentElement.style.setProperty('--card','#f8fafc');
+        document.body.style.color = '#071124';
+        themeBtn.textContent = '☀️';
+      } else {
+        document.documentElement.style.setProperty('--bg','#0B0F19');
+        document.documentElement.style.setProperty('--card','#111827');
+        document.body.style.color = '#fff';
+        themeBtn.textContent = '🌙';
+      }
+      ripple(themeBtn, e);
+    });
+
+    /* ========== Ripple helper ========== */
+    function ripple(el, e){
+      const rect = el.getBoundingClientRect();
+      const r = document.createElement('span');
+      r.className = 'ripple';
+      const size = Math.max(rect.width, rect.height);
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = ( (e.clientX || rect.left+rect.width/2) - rect.left - size/2) + 'px';
+      r.style.top = ( (e.clientY || rect.top+rect.height/2) - rect.top - size/2) + 'px';
+      el.appendChild(r);
+      setTimeout(()=> r.remove(), 700);
+    }
+    // attach ripple to elements with btn-ripple class
+    $$('.btn-ripple').forEach(btn=>{
+      btn.addEventListener('click', (e)=> ripple(btn, e));
+    });
+
+    /* ========== Analyze flow (UI-only simulation) ========== */
+    const analyzeBtn = $('#analyzeBtn');
+    const pasteBtn = $('#pasteBtn');
+    const urlInput = $('#urlInput');
+    const heroLoading = $('#heroLoading');
+    const resultSection = $('#result');
+    const formatsList = $('#formatsList');
+    const copyLinkBtn = $('#copyLinkBtn');
+    const shareBtn = $('#shareBtn');
+
+    pasteBtn.addEventListener('click', async (e) => {
+      // try navigator.clipboard (may not work on file://)
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) urlInput.value = text;
+      } catch (err) {
+        // if unavailable, insert demo url
+        urlInput.value = 'https://youtu.be/dQw4w9WgXcQ';
+      }
+      ripple(pasteBtn, e);
+    });
+
+    analyzeBtn.addEventListener('click', async (e) => {
+      ripple(analyzeBtn, e);
+      const url = urlInput.value.trim();
+      if(!url){
+        urlInput.focus();
+        urlInput.style.boxShadow = '0 0 0 4px rgba(124,58,237,0.12)';
+        setTimeout(()=> urlInput.style.boxShadow = '', 900);
+        return;
+      }
+
+      // show loading skeleton
+      heroLoading.style.display = 'block';
+      resultSection.style.display = 'none';
+
+      // simulate network/analyze delay with staged animations
+      await delay(900);
+      // pulse
+      heroLoading.querySelector('.skeleton').style.opacity = '0.9';
+      await delay(1000);
+
+      // populate result with demo data (simulate success)
+      populateResult(demoMeta, demoFormats);
+      heroLoading.style.display = 'none';
+      resultSection.style.display = 'block';
+      // scroll into view
+      document.getElementById('result').scrollIntoView({behavior:'smooth',block:'center'});
+    });
+
+    function populateResult(meta, formats){
+      $('#videoTitle').textContent = meta.title;
+      $('#channel').textContent = `${meta.channel} • ${meta.uploadDate}`;
+      $('#views').textContent = `${meta.views} views`;
+      $('#uploaded').textContent = 'Uploaded 5 days ago';
+      // thumbnail already set via demo
+
+      // clear formats
+      formatsList.innerHTML = '';
+      formats.forEach(f=>{
+        const node = document.createElement('div');
+        node.className = 'format';
+        node.innerHTML = `
+          <div style="display:flex;flex-direction:column">
+            <div class="quality">${f.quality} <span style="color:var(--muted);font-weight:600">· ${f.ext.toUpperCase()}</span></div>
+            <div class="file-size">${f.sizeText}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <div class="badge">${f.quality}</div>
+            <div style="display:flex;gap:8px">
+              <button class="download-btn" data-id="${f.id}" data-ext="${f.ext}" data-size="${f.sizeText}" data-quality="${f.quality}">Download</button>
+              ${f.ext === 'mp3' ? '<button class="download-btn" data-audio="true">MP3</button>' : ''}
+            </div>
+          </div>
+        `;
+        formatsList.appendChild(node);
+      });
+
+      // attach download handlers (simulate)
+      $$('.download-btn', formatsList).forEach(btn=>{
+        btn.addEventListener('click', async (e)=>{
+          ripple(btn, e);
+          const id = btn.dataset.id || 'audio';
+          const ext = btn.dataset.ext || 'mp3';
+          const sizeText = btn.dataset.size || '4 MB';
+          btn.textContent = 'Preparing...';
+          btn.disabled = true;
+          await delay(700);
+          // create a small blob and trigger download with realistic filename
+          const filename = `${meta.title.replace(/[^a-z0-9]/gi,'_').slice(0,60)}_${id}.${ext}`;
+          const blob = new Blob([`YTGrab demo file\ntitle:${meta.title}\nformat:${id}\nsize:${sizeText}`], {type: 'application/octet-stream'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          btn.textContent = 'Download';
+          btn.disabled = false;
+        });
+      });
+    }
+
+    copyLinkBtn.addEventListener('click', async (e)=>{
+      ripple(copyLinkBtn, e);
+      const url = urlInput.value || 'https://youtu.be/dQw4w9WgXcQ';
+      try{
+        await navigator.clipboard.writeText(url);
+        copyLinkBtn.textContent = 'Copied';
+        setTimeout(()=> copyLinkBtn.textContent = 'Copy Link', 1200);
+      }catch{
+        copyLinkBtn.textContent = 'Copied';
+        setTimeout(()=> copyLinkBtn.textContent = 'Copy Link', 1200);
+      }
+    });
+
+    shareBtn.addEventListener('click', (e)=>{
+      ripple(shareBtn, e);
+      alert('Share dialog simulated — copy the link from the input to share.');
+    });
+
+    /* ========== FAQ accordion ========== */
+    $$('.qa').forEach(q=>{
+      const btn = q.querySelector('button');
+      btn.addEventListener('click', (e)=>{
+        const open = q.classList.contains('open');
+        $$('.qa').forEach(x=> x.classList.remove('open'));
+        if(!open){
+          q.classList.add('open');
+          btn.setAttribute('aria-expanded','true');
+        } else {
+          q.classList.remove('open');
+          btn.setAttribute('aria-expanded','false');
+        }
+      });
+    });
+
+    /* ========== Contact form (UI-only) ========== */
+    $('#sendContact').addEventListener('click', async (e)=>{
+      ripple(e.currentTarget, e);
+      const name = $('#contactName').value.trim();
+      const email = $('#contactEmail').value.trim();
+      const msg = $('#contactMessage').value.trim();
+      const status = $('#contactStatus');
+      if(!name || !email || !msg){ status.textContent = 'Please fill in all fields.'; status.style.color = '#FF6B6B'; return;}
+      status.textContent = 'Sending...';
+      status.style.color = 'var(--muted)';
+      await delay(900);
+      status.textContent = 'Sent — thanks!';
+      status.style.color = '#7CE38A';
+      $('#contactName').value='';$('#contactEmail').value='';$('#contactMessage').value='';
+    });
+
+    /* small helpers */
+    function delay(ms){ return new Promise(res=>setTimeout(res, ms)) }
+
+    // keyboard accessibility: Enter on input triggers analyze
+    urlInput.addEventListener('keydown', (e)=> { if(e.key==='Enter') analyzeBtn.click(); });
+
+    /* Floating animations timing */
+    document.querySelectorAll('.float-anim').forEach((el,i)=> {
+      el.style.animationDelay = (i*0.4)+'s';
+    });
+
+    // show demo result automatically after small delay so reviewer sees layout quickly
+    window.addEventListener('load', async ()=>{
+      await delay(400);
+      // pre-populate input with demo url for clarity
+      urlInput.value = 'https://youtu.be/dQw4w9WgXcQ';
+      // optionally auto-analyze to show preview
+      // analyzeBtn.click(); // commented out so reviewer can trigger when ready
+    });
+
+    /* Accessibility: focus outlines for keyboard users */
+    document.body.addEventListener('mousedown', ()=> document.body.classList.add('using-mouse'));
+    document.body.addEventListener('keydown', (e)=> {
+      if(e.key === 'Tab') document.body.classList.remove('using-mouse');
+    });
+  </script>
+</body>
+</html>
