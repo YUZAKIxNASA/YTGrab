@@ -1,5 +1,10 @@
-# YTGrab
+# Frontend README
 
-Repository initialized for YTGrab project. This commit creates the default branch so feature branches (like backend/express-api) can be created.
+This is the Next.js frontend for YTGrab. It is a Tailwind CSS + Framer Motion based UI scaffold.
 
-Note: Frontend scaffold is maintained separately and will be integrated. This repo is being prepared for the backend implementation.
+To run locally:
+
+1. npm install
+2. npm run dev
+
+The frontend expects the backend to be available at the same origin (calls /api/analyze and /api/download). You can use a proxy or set up CORS accordingly.
