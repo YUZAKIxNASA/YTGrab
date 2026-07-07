@@ -20,7 +20,8 @@
     "helmet": "^7.0.0",
     "morgan": "^1.10.0",
     "pino": "^8.21.0",
-    "node-cache": "^5.1.2"
+    "lru-cache": "^10.0.0",
+    "concat-stream": "^2.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22",
